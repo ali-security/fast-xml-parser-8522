@@ -41,6 +41,43 @@ export const defaultOptions = {
     captureMetaData: false,
 };
    
+/**
+ * Normalizes processEntities option for backward compatibility
+ * @param {boolean|object} value
+ * @returns {object} Always returns normalized object
+ */
+function normalizeProcessEntities(value) {
+    if (typeof value === 'boolean') {
+        return {
+            enabled: value,
+            maxEntitySize: 10000,
+            maxExpansionDepth: 10,
+            maxTotalExpansions: 1000,
+            maxExpandedLength: 100000,
+            maxEntityCount: 100,
+            allowedTags: null,
+            tagFilter: null
+        };
+    }
+
+    if (typeof value === 'object' && value !== null) {
+        return {
+            enabled: value.enabled !== false,
+            maxEntitySize: Math.max(1, value.maxEntitySize ?? 10000),
+            maxExpansionDepth: Math.max(1, value.maxExpansionDepth ?? 10),
+            maxTotalExpansions: Math.max(1, value.maxTotalExpansions ?? 1000),
+            maxExpandedLength: Math.max(1, value.maxExpandedLength ?? 100000),
+            maxEntityCount: Math.max(1, value.maxEntityCount ?? 100),
+            allowedTags: value.allowedTags ?? null,
+            tagFilter: value.tagFilter ?? null
+        };
+    }
+
+    return normalizeProcessEntities(true);
+}
+
 export const buildOptions = function(options) {
-    return Object.assign({}, defaultOptions, options);
+    const built = Object.assign({}, defaultOptions, options);
+    built.processEntities = normalizeProcessEntities(built.processEntities);
+    return built;
 };

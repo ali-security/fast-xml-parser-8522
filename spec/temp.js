@@ -3,6 +3,22 @@
 import { format } from "path";
 import {XMLParser, XMLValidator, XMLBuilder} from "../src/fxp.js";
 
+describe("CVE-2026-25128", function() {
+	fit("bug test", function() {
+
+		const xmlData = `<root attr="&#9999999;"/>`;
+		const options = {
+			ignoreAttributes: false,
+			attributeNamePrefix: '',
+						//processEntities: true, 
+						htmlEntities: true 
+		};
+		const parser = new XMLParser(options);
+		let result = parser.parse(xmlData);
+        console.log(JSON.stringify(result,null,4));
+	})
+});
+
 describe("unpaired and empty tags", function() {
     fit("bug test", function() {
         

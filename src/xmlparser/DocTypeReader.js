@@ -1,7 +1,7 @@
 import {isName} from '../util.js';
 
 //TODO: handle comments
-export default function readDocType(xmlData, i){
+export default function readDocType(xmlData, i, processEntities = {}){
     
     const entities = {};
     if( xmlData[i + 3] === 'O' &&
@@ -20,12 +20,14 @@ export default function readDocType(xmlData, i){
                 if( hasBody && hasSeq(xmlData, "!ENTITY",i)){
                     i += 7; 
                     let entityName, val;
-                    [entityName, val,i] = readEntityExp(xmlData,i+1);
-                    if(val.indexOf("&") === -1) //Parameter entities are not supported
+                    [entityName, val,i] = readEntityExp(xmlData,i+1, processEntities);
+                    if(val.indexOf("&") === -1){
+                        const escaped = entityName.replace(/[.\-+*:]/g, '\\.');
                         entities[ entityName ] = {
-                            regx : RegExp( `&${entityName};`,"g"),
+                            regx : RegExp( `&${escaped};`,"g"),
                             val: val
                         };
+                    }
                 }
                 else if( hasBody && hasSeq(xmlData, "!ELEMENT",i))  {
                     i += 8;//Not supported
@@ -78,7 +80,7 @@ const skipWhitespace = (data, index) => {
     return index;
 };
 
-function readEntityExp(xmlData, i) {    
+function readEntityExp(xmlData, i, processEntities) {
     //External entities are not supported
     //    <!ENTITY ext SYSTEM "http://normal-website.com" >
 
@@ -112,6 +114,16 @@ function readEntityExp(xmlData, i) {
     // Read entity value (internal entity)
     let entityValue = "";
     [i, entityValue] = readIdentifierVal(xmlData, i, "entity");
+
+    // Validate entity size
+    if (processEntities != null && processEntities.enabled !== false &&
+        processEntities.maxEntitySize &&
+        entityValue.length > processEntities.maxEntitySize) {
+        throw new Error(
+            `Entity "${entityName}" size (${entityValue.length}) exceeds maximum allowed size (${processEntities.maxEntitySize})`
+        );
+    }
+
     i--;
     return [entityName, entityValue, i ];
 }

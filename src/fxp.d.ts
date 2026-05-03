@@ -1,7 +1,63 @@
+export type ProcessEntitiesOptions = {
+  /**
+   * Whether to enable entity processing
+   *
+   * Defaults to `true`
+   */
+  enabled?: boolean;
+
+  /**
+   * Maximum size in characters for a single entity definition
+   *
+   * Defaults to `10000`
+   */
+  maxEntitySize?: number;
+
+  /**
+   * Maximum depth for nested entity references (reserved for future use)
+   *
+   * Defaults to `10`
+   */
+  maxExpansionDepth?: number;
+
+  /**
+   * Maximum total number of entity expansions allowed
+   *
+   * Defaults to `1000`
+   */
+  maxTotalExpansions?: number;
+
+  /**
+   * Maximum total expanded content length in characters
+   *
+   * Defaults to `100000`
+   */
+  maxExpandedLength?: number;
+
+  /**
+   * Array of tag names where entity replacement is allowed.
+   * If null, entities are replaced in all tags.
+   *
+   * Defaults to `null`
+   */
+  allowedTags?: string[] | null;
+
+  /**
+   * Custom filter function to determine if entities should be replaced in a tag
+   *
+   * @param tagName - The name of the current tag
+   * @param jPath - The jPath of the current tag
+   * @returns `true` to allow entity replacement, `false` to skip
+   *
+   * Defaults to `null`
+   */
+  tagFilter?: ((tagName: string, jPath: string) => boolean) | null;
+};
+
 export type X2jOptions = {
   /**
    * Preserve the order of tags in resulting JS object
-   * 
+   *
    * Defaults to `false`
    */
   preserveOrder?: boolean;
@@ -160,14 +216,20 @@ export type X2jOptions = {
 
   /**
    * Whether to process default and DOCTYPE entities
-   * 
+   *
+   * When `true` - enables entity processing with default limits
+   *
+   * When `false` - disables all entity processing
+   *
+   * When `ProcessEntitiesOptions` - enables entity processing with custom configuration
+   *
    * Defaults to `true`
    */
-  processEntities?: boolean;
+  processEntities?: boolean | ProcessEntitiesOptions;
 
   /**
    * Whether to process HTML entities
-   * 
+   *
    * Defaults to `false`
    */
   htmlEntities?: boolean;

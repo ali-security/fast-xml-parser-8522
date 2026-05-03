@@ -1,3 +1,4 @@
+import { format } from "path";
 import {XMLParser, XMLBuilder} from "../src/fxp.js";
 
 describe("XMLBuilder", function () {
@@ -319,4 +320,31 @@ describe("XMLBuilder", function () {
         // console.log(result);
         expect(result).toEqual(expected);
     });
+});
+
+describe("XMLBuilder- array processing issue", function () {
+    it("should not throw stack overflow when child value is a non-array (issue #781)", function () {
+        const builder = new XMLBuilder({
+            ignoreAttributes: false,
+            attributeNamePrefix: '@_',
+            preserveOrder: true,
+        });
+        const input = [
+            {
+                'foo': [
+                    { 'bar': [{ '@_V': 'baz' }] },
+                    //{ 'fum': [{ 'qux': '' }] },
+                    { 'hello': [{ '#text': 'world' }] }
+                ]
+            }
+        ];
+        expect(function () {
+            builder.build(input);
+        }).not.toThrow();
+
+        const result = builder.build(input);
+        expect(result).toContain('<hello>world</hello>');
+        expect(result).toContain('<foo>');
+    });
+
 });
